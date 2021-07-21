@@ -4,7 +4,7 @@
   "permissions": "PUBLIC_READ_WRITE",
   "pages": [
     {
-      "name": "New User",
+      "name": "User Insights",
       "description": null,
       "widgets": [
         {
@@ -17,13 +17,59 @@
             "height": 3,
             "width": 4
           },
-          "title": "User Time On Site",
+          "title": "New Daily Users",
           "rawConfiguration": {
             "dataFormatters": [],
             "nrqlQueries": [
               {
-                "accountId": 0,
-                "query": "SELECT percentile(pageHide, 75), percentile(windowUnload, 75) FROM PageViewTiming WHERE (appId = 21369599) SINCE 1800 seconds AGO"
+                "accountId": 10468843,
+                "query": "SELECT uniqueCount(email) as 'Unique users' FROM PageAction since 1 day ago compare with 1 day ago"
+              }
+            ],
+            "thresholds": []
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "layout": {
+            "column": 5,
+            "row": 1,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Stats Breakdown",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT average(duration) as 'Avg Page Load', percentile(duration,50) as 'Median', percentile(duration,95) as 'Percentile', uniqueCount(session) as 'Visitors' FROM PageView SINCE 1 week ago"
+              }
+            ],
+            "thresholds": []
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "layout": {
+            "column": 9,
+            "row": 1,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Active Sessions",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT uniqueCount(session) FROM PageView since 60 minute ago until 10 seconds ago COMPARE WITH 1 hour ago"
               }
             ],
             "thresholds": []
@@ -35,23 +81,20 @@
             "id": "viz.line"
           },
           "layout": {
-            "column": 5,
-            "row": 1,
+            "column": 1,
+            "row": 4,
             "height": 3,
-            "width": 4
+            "width": 8
           },
-          "title": "Throughput",
+          "title": "User Traffic Over Time",
           "rawConfiguration": {
-            "facet": {
-              "showOtherSeries": false
-            },
             "legend": {
               "enabled": true
             },
             "nrqlQueries": [
               {
-                "accountId": 0,
-                "query": "SELECT rate(count(*), 1 minute) FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) AND (category IN ('Initial page load', 'Route change')) SINCE 1800 seconds AGO FACET CASES (WHERE category = 'Initial page load' AS 'Initial page load', WHERE category = 'Route change' AS 'Route change') TIMESERIES EXTRAPOLATE"
+                "accountId": 10468843,
+                "query": "SELECT count(*) FROM PageView TIMESERIES 1 hour SINCE 1 week ago COMPARE WITH 1 week ago"
               }
             ],
             "yAxisLeft": {
@@ -62,28 +105,103 @@
         },
         {
           "visualization": {
-            "id": "viz.line"
+            "id": "viz.bar"
           },
           "layout": {
             "column": 9,
-            "row": 1,
+            "row": 4,
             "height": 3,
             "width": 4
           },
-          "title": "",
+          "title": "Most Frequent Page Views",
           "rawConfiguration": {
-            "legend": {
-              "enabled": true
+            "facet": {
+              "showOtherSeries": false
             },
             "nrqlQueries": [
               {
-                "accountId": 0,
-                "query": "SELECT percentile(timeToResponseStart, 50) AS 'Back end (Time to first byte)', percentile(duration-timeToResponseStart, 50) AS 'Front end (Window load + AJAX)' FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) SINCE 1800 seconds AGO TIMESERIES EXTRAPOLATE"
+                "accountId": 10468843,
+                "query": "SELECT count(*) FROM PageView since 1 days ago FACET pageUrl limit 25"
               }
-            ],
-            "yAxisLeft": {
-              "zero": true
-            }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.pie"
+          },
+          "layout": {
+            "column": 1,
+            "row": 7,
+            "height": 3,
+            "width": 8
+          },
+          "title": "Page Views by City",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT count(*) as 'Page Views' FROM PageView  FACET nr.cityWithRegionAndCountry SINCE 1 day ago"
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.pie"
+          },
+          "layout": {
+            "column": 9,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "First Interaction by Device",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT percentile(firstInteraction, 75) FROM PageViewTiming WHERE (appId = 21369599) AND (deviceType != 'Unknown') AND (firstInteraction < 300) FACET `deviceType` LIMIT 10 SINCE 1800 seconds AGO"
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        }
+      ]
+    },
+    {
+      "name": "Technical Insights",
+      "description": null,
+      "widgets": [
+        {
+          "visualization": {
+            "id": "viz.pie"
+          },
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "height": 3,
+            "width": 8
+          },
+          "title": "Top 50 JavaScript Errors",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT count(*) FROM  JavaScriptError FACET errorClass SINCE 1 day ago LIMIT 50"
+              }
+            ]
           },
           "linkedEntityGuids": null
         },
@@ -92,8 +210,8 @@
             "id": "viz.stacked-bar"
           },
           "layout": {
-            "column": 1,
-            "row": 4,
+            "column": 9,
+            "row": 1,
             "height": 3,
             "width": 4
           },
@@ -107,87 +225,8 @@
             },
             "nrqlQueries": [
               {
-                "accountId": 0,
+                "accountId": 10468843,
                 "query": "SELECT percentile(duration, 50) FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) AND (category IN ('Initial page load')) SINCE 1800 seconds AGO FACET CASES (WHERE category = 'Initial page load' AS 'Initial page load') TIMESERIES EXTRAPOLATE"
-              }
-            ]
-          },
-          "linkedEntityGuids": null
-        },
-        {
-          "visualization": {
-            "id": "viz.billboard"
-          },
-          "layout": {
-            "column": 5,
-            "row": 4,
-            "height": 3,
-            "width": 4
-          },
-          "title": "",
-          "rawConfiguration": {
-            "dataFormatters": [],
-            "nrqlQueries": [
-              {
-                "accountId": 0,
-                "query": "SELECT average(mem_usage_percent) as 'Mem (% of limit)' from cf_docker_container_memory WHERE (environment = 'production')"
-              }
-            ],
-            "thresholds": [
-              {
-                "alertSeverity": "WARNING",
-                "value": 80
-              },
-              {
-                "alertSeverity": "CRITICAL",
-                "value": 95
-              }
-            ]
-          },
-          "linkedEntityGuids": null
-        },
-        {
-          "visualization": {
-            "id": "viz.billboard"
-          },
-          "layout": {
-            "column": 9,
-            "row": 4,
-            "height": 3,
-            "width": 4
-          },
-          "title": "New Daily Users",
-          "rawConfiguration": {
-            "dataFormatters": [],
-            "nrqlQueries": [
-              {
-                "accountId": 0,
-                "query": "SELECT uniqueCount(email) as 'Unique users' FROM PageAction since 1 day ago compare with 1 day ago"
-              }
-            ],
-            "thresholds": []
-          },
-          "linkedEntityGuids": null
-        },
-        {
-          "visualization": {
-            "id": "viz.pie"
-          },
-          "layout": {
-            "column": 1,
-            "row": 7,
-            "height": 3,
-            "width": 4
-          },
-          "title": "First Interaction by Device",
-          "rawConfiguration": {
-            "facet": {
-              "showOtherSeries": true
-            },
-            "nrqlQueries": [
-              {
-                "accountId": 0,
-                "query": "SELECT percentile(firstInteraction, 75) FROM PageViewTiming WHERE (appId = 21369599) AND (deviceType != 'Unknown') AND (firstInteraction < 300) FACET `deviceType` LIMIT 10 SINCE 1800 seconds AGO"
               }
             ]
           },
@@ -198,12 +237,12 @@
             "id": "viz.line"
           },
           "layout": {
-            "column": 5,
-            "row": 7,
+            "column": 1,
+            "row": 4,
             "height": 3,
-            "width": 4
+            "width": 8
           },
-          "title": "Daily JavaScript Errors ",
+          "title": "JavaScript Errors Over Time",
           "rawConfiguration": {
             "facet": {
               "showOtherSeries": false
@@ -213,7 +252,7 @@
             },
             "nrqlQueries": [
               {
-                "accountId": 0,
+                "accountId": 1067061,
                 "query": "SELECT count(*) from PageAction WHERE actionName LIKE '%JavaScriptError%'AND env = 'production' FACET errorMessage SINCE 1 day ago TIMESERIES 1 HOUR"
               }
             ],
@@ -229,11 +268,11 @@
           },
           "layout": {
             "column": 9,
-            "row": 7,
+            "row": 4,
             "height": 3,
             "width": 4
           },
-          "title": "Weekly JavaScript Errors",
+          "title": "Throughput",
           "rawConfiguration": {
             "facet": {
               "showOtherSeries": false
@@ -243,8 +282,85 @@
             },
             "nrqlQueries": [
               {
-                "accountId": 0,
-                "query": "SELECT count(*) from PageAction WHERE actionName LIKE '%JavaScriptError%'AND env = 'production' FACET errorMessage SINCE 1 week ago TIMESERIES 1 day"
+                "accountId": 10468843,
+                "query": "SELECT rate(count(*), 1 minute) FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) AND (category IN ('Initial page load', 'Route change')) SINCE 1800 seconds AGO FACET CASES (WHERE category = 'Initial page load' AS 'Initial page load', WHERE category = 'Route change' AS 'Route change') TIMESERIES EXTRAPOLATE"
+              }
+            ],
+            "yAxisLeft": {
+              "zero": true
+            }
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.table"
+          },
+          "layout": {
+            "column": 1,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "JavaScript Error Messages",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT count(*) FROM  JavaScriptError FACET errorMessage SINCE 1 day ago LIMIT 50"
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "dc5b694f-9125-4c64-8e4e-c52e604c8088.circular-progress-bar"
+          },
+          "layout": {
+            "column": 5,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Memory Usage",
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountId": 1,
+                "query": "SELECT average(mem_usage_percent)/100 as 'Mem (% of limit)' from cf_docker_container_memory WHERE (environment = 'production')"
+              }
+            ],
+            "thresholds": {
+              "criticalThreshold": null,
+              "highValuesAreSuccess": null
+            }
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.line"
+          },
+          "layout": {
+            "column": 9,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Backend vs. Frontend Load Times",
+          "rawConfiguration": {
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 10468843,
+                "query": "SELECT percentile(timeToResponseStart, 50) AS 'Back end (Time to first byte)', percentile(duration-timeToResponseStart, 50) AS 'Front end (Window load + AJAX)' FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) SINCE 1 day AGO TIMESERIES EXTRAPOLATE"
               }
             ],
             "yAxisLeft": {
@@ -254,11 +370,6 @@
           "linkedEntityGuids": null
         }
       ]
-    },
-    {
-      "name": "Backend",
-      "description": null,
-      "widgets": []
     }
   ]
 }
