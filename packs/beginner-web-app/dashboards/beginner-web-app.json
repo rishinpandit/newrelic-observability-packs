@@ -1,0 +1,264 @@
+{
+  "name": "New User",
+  "description": null,
+  "permissions": "PUBLIC_READ_WRITE",
+  "pages": [
+    {
+      "name": "New User",
+      "description": null,
+      "widgets": [
+        {
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "height": 3,
+            "width": 4
+          },
+          "title": "User Time On Site",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT percentile(pageHide, 75), percentile(windowUnload, 75) FROM PageViewTiming WHERE (appId = 21369599) SINCE 1800 seconds AGO"
+              }
+            ],
+            "thresholds": []
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.line"
+          },
+          "layout": {
+            "column": 5,
+            "row": 1,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Throughput",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT rate(count(*), 1 minute) FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) AND (category IN ('Initial page load', 'Route change')) SINCE 1800 seconds AGO FACET CASES (WHERE category = 'Initial page load' AS 'Initial page load', WHERE category = 'Route change' AS 'Route change') TIMESERIES EXTRAPOLATE"
+              }
+            ],
+            "yAxisLeft": {
+              "zero": true
+            }
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.line"
+          },
+          "layout": {
+            "column": 9,
+            "row": 1,
+            "height": 3,
+            "width": 4
+          },
+          "title": "",
+          "rawConfiguration": {
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT percentile(timeToResponseStart, 50) AS 'Back end (Time to first byte)', percentile(duration-timeToResponseStart, 50) AS 'Front end (Window load + AJAX)' FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) SINCE 1800 seconds AGO TIMESERIES EXTRAPOLATE"
+              }
+            ],
+            "yAxisLeft": {
+              "zero": true
+            }
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.stacked-bar"
+          },
+          "layout": {
+            "column": 1,
+            "row": 4,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Initial Page Loads",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT percentile(duration, 50) FROM BrowserInteraction WHERE (appId = 21369599) AND (`mobileOptimized` IS NULL) AND (category IN ('Initial page load')) SINCE 1800 seconds AGO FACET CASES (WHERE category = 'Initial page load' AS 'Initial page load') TIMESERIES EXTRAPOLATE"
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "layout": {
+            "column": 5,
+            "row": 4,
+            "height": 3,
+            "width": 4
+          },
+          "title": "",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT average(mem_usage_percent) as 'Mem (% of limit)' from cf_docker_container_memory WHERE (environment = 'production')"
+              }
+            ],
+            "thresholds": [
+              {
+                "alertSeverity": "WARNING",
+                "value": 80
+              },
+              {
+                "alertSeverity": "CRITICAL",
+                "value": 95
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "layout": {
+            "column": 9,
+            "row": 4,
+            "height": 3,
+            "width": 4
+          },
+          "title": "New Daily Users",
+          "rawConfiguration": {
+            "dataFormatters": [],
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT uniqueCount(email) as 'Unique users' FROM PageAction since 1 day ago compare with 1 day ago"
+              }
+            ],
+            "thresholds": []
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.pie"
+          },
+          "layout": {
+            "column": 1,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "First Interaction by Device",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT percentile(firstInteraction, 75) FROM PageViewTiming WHERE (appId = 21369599) AND (deviceType != 'Unknown') AND (firstInteraction < 300) FACET `deviceType` LIMIT 10 SINCE 1800 seconds AGO"
+              }
+            ]
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.line"
+          },
+          "layout": {
+            "column": 5,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Daily JavaScript Errors ",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT count(*) from PageAction WHERE actionName LIKE '%JavaScriptError%'AND env = 'production' FACET errorMessage SINCE 1 day ago TIMESERIES 1 HOUR"
+              }
+            ],
+            "yAxisLeft": {
+              "zero": true
+            }
+          },
+          "linkedEntityGuids": null
+        },
+        {
+          "visualization": {
+            "id": "viz.line"
+          },
+          "layout": {
+            "column": 9,
+            "row": 7,
+            "height": 3,
+            "width": 4
+          },
+          "title": "Weekly JavaScript Errors",
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountId": 0,
+                "query": "SELECT count(*) from PageAction WHERE actionName LIKE '%JavaScriptError%'AND env = 'production' FACET errorMessage SINCE 1 week ago TIMESERIES 1 day"
+              }
+            ],
+            "yAxisLeft": {
+              "zero": true
+            }
+          },
+          "linkedEntityGuids": null
+        }
+      ]
+    },
+    {
+      "name": "Backend",
+      "description": null,
+      "widgets": []
+    }
+  ]
+}
